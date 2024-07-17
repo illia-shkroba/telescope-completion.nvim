@@ -44,8 +44,10 @@ local remove_inserted = function(completions, buffer, cursor)
         end_column,
         {}
       )
+      return { row = row, column = begin_column + offset - 1 }
     end
   end
+  return nil
 end
 
 local paste_completion = function(
@@ -60,9 +62,23 @@ local paste_completion = function(
     return
   end
 
-  remove_inserted(completions, completed_buffer, cursor)
+  local row, column = cursor[1] - 1, cursor[2]
+  local lines =
+    vim.api.nvim_buf_get_lines(completed_buffer, row, row + 1, false)
+  local cursor_at_end_of_line = #lines > 0 and #lines[1] == column
+
+  local inserted_location = remove_inserted(
+    completions,
+    completed_buffer,
+    cursor
+  ) or { row = row, column = column }
   actions.close(prompt_buffer)
-  vim.api.nvim_paste(selection[1], true, -1)
+
+  -- For some reason cursor's column is shifted by +1 inside of select_default
+  -- action. Thus, the cursor has to be shifted to its original position.
+  vim.cmd.normal(tostring(inserted_location.column + 1) .. "|")
+
+  vim.api.nvim_put({ selection[1] }, "c", cursor_at_end_of_line, true)
 end
 
 local completion = function(opts)
