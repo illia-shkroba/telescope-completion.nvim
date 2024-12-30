@@ -27,13 +27,13 @@ This is an example for [Lazy.nvim](https://github.com/folke/lazy.nvim).
 -- This plugin exposes `completion` picker that could only be used when there is
 -- a *popup-menu* visible. You can check if popup-menu is visible by using
 -- `vim.fn.pumvisible` function (see `:h popupmenu-completion` for details).
--- Here is an example that enables `completion` to be used with **CTRL-Q**:
-vim.keymap.set("i", [[<C-q>]], function()
+-- Here is an example that enables `completion` to be used with **CTRL-Z**:
+vim.keymap.set("i", [[<C-z>]], function()
   if vim.fn.pumvisible() == 1 then
     vim.cmd.Telescope "completion"
     return ""
   else
-    return [[<C-q>]]
+    return [[<C-z>]]
   end
 end, { expr = true })
 ```
