@@ -102,15 +102,18 @@ local completion = function(opts)
           results = completions,
         },
         sorter = conf.generic_sorter(opts),
-        attach_mappings = function()
-          actions.select_default:replace(function(prompt_buffer)
+        attach_mappings = function(_, map)
+          local function select_default(prompt_buffer)
             return paste_completion(
               prompt_buffer,
               completions,
               completed_buffer,
               cursor
             )
-          end)
+          end
+          actions.select_default:replace(select_default)
+          map({ "n", "i" }, "<c-y>", select_default)
+          map({ "n", "i" }, "<c-e>", actions.close)
           return true
         end,
       })
