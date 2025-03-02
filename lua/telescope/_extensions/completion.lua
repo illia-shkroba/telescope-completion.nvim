@@ -122,9 +122,33 @@ local completion = function(opts)
   vim.cmd.stopinsert()
 end
 
+local function completion_expr(opts)
+  opts = vim.tbl_deep_extend(
+    "keep",
+    opts or {},
+    { popup_menu_up_key = [[<C-p>]], popup_menu_down_key = [[<C-n>]] }
+  )
+
+  vim.schedule(function()
+    vim.cmd.Telescope "completion"
+  end)
+
+  local info = vim.fn.complete_info { "items", "selected" }
+  if info.selected < #info.items / 2 then
+    return string.rep(opts.popup_menu_up_key, info.selected + 1)
+  else
+    return string.rep(opts.popup_menu_down_key, #info.items - info.selected)
+  end
+end
+
 return require("telescope").register_extension {
   setup = function() end,
   exports = {
+    -- To be called via `:Telescope completion`. It should only be used when:
+    -- `vim.fn.pumvisible() == 1`.
     completion = completion,
+    -- To be called in `vim.keymap.set` with `expr = true`. It should only be
+    -- used when: `vim.fn.pumvisible() == 1`.
+    completion_expr = completion_expr,
   },
 }
